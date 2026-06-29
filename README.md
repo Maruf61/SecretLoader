@@ -16,9 +16,9 @@ Credentials tend to end up in `appsettings.json`, `.env` files, or the run-confi
 
 | IDE | Folder | Package | Marketplace |
 | --- | --- | --- | --- |
-| IntelliJ IDEA, Rider, PyCharm, and other JetBrains IDEs | [`intellij/`](intellij/) | `.zip` | JetBrains Marketplace |
-| Visual Studio 2026 | [`visual-studio/`](visual-studio/) | `.vsix` | Visual Studio Marketplace |
-| VS Code | [`vscode/`](vscode/) | `.vsix` | VS Marketplace / Open VSX |
+| IntelliJ IDEA, Rider, PyCharm, and other JetBrains IDEs | [`intellij/`](intellij/) | `.zip` | [JetBrains Marketplace](https://plugins.jetbrains.com/plugin/32551-secretloader) |
+| Visual Studio 2022 17.14+ / 2026 | [`visual-studio/`](visual-studio/) | `.vsix` | [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=KiviAS.secret-loader) |
+| VS Code | [`vscode/`](vscode/) | `.vsix` | [VS Marketplace](https://marketplace.visualstudio.com/items?itemName=KiviAS.secretloader) |
 
 Each edition has its own README with setup and settings for that IDE.
 
