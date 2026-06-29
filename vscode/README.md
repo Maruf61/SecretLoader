@@ -77,3 +77,7 @@ Highest wins:
 - A failed fetch stops the launch rather than starting the program without its configuration.
 
 For keeping secrets out of git history as well, see the pre-commit hook in `git-hooks/`.
+
+## Support
+
+If SecretLoader is useful to you, you can [buy me a coffee](https://buymeacoffee.com/maruf61). Thanks!

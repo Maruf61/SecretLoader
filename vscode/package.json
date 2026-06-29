@@ -19,6 +19,9 @@
     "url": "https://github.com/Maruf61/SecretLoader/issues"
   },
   "homepage": "https://github.com/Maruf61/SecretLoader#readme",
+  "sponsor": {
+    "url": "https://buymeacoffee.com/maruf61"
+  },
   "engines": {
     "vscode": "^1.80.0"
   },

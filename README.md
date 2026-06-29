@@ -93,6 +93,10 @@ build.ps1, build.sh   Build all packages into ./build/
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Issues and pull requests are welcome at <https://github.com/Maruf61/SecretLoader>.
 
+## Support
+
+If SecretLoader saves you some hassle, you can [buy me a coffee](https://buymeacoffee.com/maruf61) — thanks!
+
 ## License
 
 GNU General Public License v3.0 or later (GPL-3.0-or-later). See [LICENSE](LICENSE).
