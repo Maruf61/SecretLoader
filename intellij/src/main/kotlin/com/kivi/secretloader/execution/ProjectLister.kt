@@ -105,7 +105,8 @@ object ProjectLister {
                     el.isValueNode -> el.asText().takeIf { it.isNotBlank() }?.let { items.putIfAbsent(it, ProjectItem(it, it)) }
                 }
             }
-            node.isObject -> node.fields().forEach { (k, v) ->
+            node.isObject -> node.fieldNames().forEach { k ->
+                val v = node.get(k)
                 if (k.isNotBlank()) items.putIfAbsent(k, ProjectItem(k, if (v.isValueNode) v.asText() else k))
             }
         }

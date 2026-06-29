@@ -171,7 +171,7 @@ object SecretFetcher {
                     val v = item.get("value")?.asText() ?: item.get("secretValue")?.asText()
                     if (k != null && v != null) secrets[k] = v
                 }
-                node.isObject -> node.fields().forEach { (k, v) -> secrets[k] = v.asText() }
+                node.isObject -> node.fieldNames().forEach { k -> secrets[k] = node.get(k).asText() }
             }
         } catch (e: Exception) {
             throw FetchException("Failed to parse CLI JSON output: ${e.message}")

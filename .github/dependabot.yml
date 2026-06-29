@@ -17,6 +17,10 @@ updates:
       # targeted engines.vscode, not the latest major.
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
+      # TypeScript majors can break the build (TS 6 dropped the implicit Node
+      # global resolution this project relies on); bump it deliberately.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: nuget
     directory: /visual-studio/SecretLoader
     schedule:

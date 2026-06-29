@@ -1,6 +1,6 @@
 # SecretLoader for Visual Studio
 
-SecretLoader runs your vault's CLI when you start a run or debug session and passes the resulting secrets to the program as environment variables, so they don't have to be kept in `launchSettings.json`, `.env` files, or the project's configuration. This is the Visual Studio edition, built for Visual Studio 2026; there are matching JetBrains and VS Code editions.
+SecretLoader runs your vault's CLI when you start a run or debug session and passes the resulting secrets to the program as environment variables, so they don't have to be kept in `launchSettings.json`, `.env` files, or the project's configuration. This is the Visual Studio edition (Visual Studio 2022 17.14+ and 2026); there are matching JetBrains and VS Code editions.
 
 It works with any CLI that prints secrets as JSON. Infisical is configured by default, with presets for Doppler, HashiCorp Vault, and AWS Secrets Manager.
 
