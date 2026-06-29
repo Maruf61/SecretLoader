@@ -1,5 +1,7 @@
 # SecretLoader for JetBrains IDEs
 
+**[Install from the JetBrains Marketplace »](https://plugins.jetbrains.com/plugin/32551-secretloader)**
+
 SecretLoader runs your vault's CLI when you start a run or debug session and passes the resulting secrets to the process as environment variables, so they don't have to be kept in `appsettings.{Env}.json`, `.env` files, or the run-configuration dialog. This is the JetBrains edition; there are matching Visual Studio and VS Code editions.
 
 It adds the variables to the launch the IDE already starts, rather than wrapping the process in an `infisical run`-style child, so breakpoints bind normally and stopping the run is clean. On Rider/.NET it does this through reflection into the run profile's environment map, because there is no public API for it — the official `RunConfigurationExtension.updateJavaParameters` hook is JVM-only. It runs on the IntelliJ-platform IDEs: IntelliJ IDEA, Rider, PyCharm, WebStorm, and GoLand.

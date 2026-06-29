@@ -1,5 +1,7 @@
 # SecretLoader
 
+[![JetBrains Marketplace](https://img.shields.io/jetbrains/plugin/v/32551?label=JetBrains&logo=jetbrains)](https://plugins.jetbrains.com/plugin/32551-secretloader) [![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/KiviAS.secretloader?label=VS%20Code&logo=visualstudiocode)](https://marketplace.visualstudio.com/items?itemName=KiviAS.secretloader) [![Visual Studio Marketplace](https://img.shields.io/badge/Visual%20Studio-Marketplace-5C2D91?logo=visualstudio)](https://marketplace.visualstudio.com/items?itemName=KiviAS.secret-loader) [![CI](https://img.shields.io/github/actions/workflow/status/Maruf61/SecretLoader/ci.yml?branch=master&label=CI)](https://github.com/Maruf61/SecretLoader/actions/workflows/ci.yml) [![License](https://img.shields.io/badge/license-GPL--3.0--or--later-blue)](LICENSE)
+
 SecretLoader is an IDE plugin that pulls application secrets from a secrets manager and supplies them to your app when you run or debug it, so the values don't have to live in your project's configuration files. It's available for IntelliJ-based IDEs, Visual Studio, and VS Code.
 
 When you start the app from your IDE, SecretLoader runs your vault's command-line tool, reads the secrets for the project and environment you're working in, and passes them to the process as environment variables. Your code reads them like any other environment variable; there's nothing to import and no change to your run configurations.

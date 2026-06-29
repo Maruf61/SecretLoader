@@ -1,5 +1,7 @@
 # SecretLoader for VS Code
 
+**[Install from the VS Marketplace »](https://marketplace.visualstudio.com/items?itemName=KiviAS.secretloader)**
+
 SecretLoader runs your vault's CLI when you start a debug session and passes the resulting secrets to the program as environment variables, so they don't have to be stored in `launch.json`, a `.env` file, or your settings. It's the VS Code edition of the plugin; there are matching IntelliJ and Visual Studio editions.
 
 It works with any CLI that prints secrets as JSON. Infisical is configured by default, with presets for Doppler, HashiCorp Vault, and AWS Secrets Manager, and you can point it at anything else by editing the command template.
