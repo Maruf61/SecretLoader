@@ -4,10 +4,19 @@ updates:
     directory: /intellij
     schedule:
       interval: weekly
+    ignore:
+      # Kotlin must track the version bundled with the target IntelliJ platform,
+      # not the latest release — bump it manually alongside the platform.
+      - dependency-name: "org.jetbrains.kotlin.jvm"
   - package-ecosystem: npm
     directory: /vscode
     schedule:
       interval: weekly
+    ignore:
+      # @types/node should match the Node runtime VS Code bundles for the
+      # targeted engines.vscode, not the latest major.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: nuget
     directory: /visual-studio/SecretLoader
     schedule:
