@@ -25,7 +25,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Build and test
         run: ./gradlew buildPlugin test --stacktrace --console=plain
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: intellij-plugin
           path: intellij/build/distributions/*.zip
@@ -48,7 +48,7 @@ jobs:
       - run: npm run compile
       - name: Package (.vsix)
         run: npx --yes @vscode/vsce package --allow-missing-repository -o secretloader-vscode.vsix
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: vscode-extension
           path: vscode/secretloader-vscode.vsix
