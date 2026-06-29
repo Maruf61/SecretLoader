@@ -4,7 +4,7 @@
   "displayName": "SecretLoader",
   "icon": "icon.png",
   "description": "Pulls secrets from your vault and provides them to your app as environment variables when you run or debug, so they don't have to live in your config files. Works with Infisical, Doppler, HashiCorp Vault, AWS Secrets Manager, or any CLI that prints JSON.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "GPL-3.0-or-later",
   "author": {
     "name": "Maruf61",

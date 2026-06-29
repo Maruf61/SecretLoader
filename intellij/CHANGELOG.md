@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1
+
+- Internal: iterate JSON objects with the non-deprecated Jackson `JsonNode` API (`fieldNames()`/`get()` instead of `fields()`) to clear a plugin-verifier deprecation warning. No functional change.
+
 ## 1.0.0
 
 First public release. Runs on IntelliJ IDEA, Rider, PyCharm, WebStorm, and GoLand.

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1
+
+- Maintenance release: marketplace packaging metadata only. No functional changes.
+
 ## 1.0.0
 
 First release. The VS Code edition matches the IntelliJ and Visual Studio ones.
