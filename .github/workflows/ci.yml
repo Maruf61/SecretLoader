@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  intellij:
+    name: IntelliJ (build + test)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: intellij
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build and test
+        run: ./gradlew buildPlugin test --stacktrace --console=plain
+      - uses: actions/upload-artifact@v4
+        with:
+          name: intellij-plugin
+          path: intellij/build/distributions/*.zip
+          if-no-files-found: error
+
+  vscode:
+    name: VS Code (compile + package)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: vscode
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: vscode/package-lock.json
+      - run: npm ci
+      - run: npm run compile
+      - name: Package (.vsix)
+        run: npx --yes @vscode/vsce package --allow-missing-repository -o secretloader-vscode.vsix
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vscode-extension
+          path: vscode/secretloader-vscode.vsix
+          if-no-files-found: error
+
+  # The Visual Studio edition is not built here: it requires Windows + Visual
+  # Studio 2026 with the "Visual Studio extension development" workload, which
+  # GitHub-hosted runners don't provide. Build it with build.ps1 on a Windows
+  # machine, or wire a self-hosted Windows runner into this workflow.

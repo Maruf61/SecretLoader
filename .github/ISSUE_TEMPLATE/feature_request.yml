@@ -1,0 +1,26 @@
+name: Feature request
+description: Suggest an idea or improvement
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / motivation
+      description: What are you trying to do, and what's missing or awkward today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What you'd like to see happen.
+  - type: dropdown
+    id: editions
+    attributes:
+      label: Which editions should this apply to?
+      multiple: true
+      options:
+        - IntelliJ / JetBrains
+        - Visual Studio
+        - VS Code
+        - All

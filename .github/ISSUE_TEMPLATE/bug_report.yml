@@ -1,0 +1,59 @@
+name: Bug report
+description: Something isn't working as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. **Redact any real secret values** from logs,
+        screenshots, and command output before posting.
+  - type: dropdown
+    id: edition
+    attributes:
+      label: Edition
+      options:
+        - IntelliJ / JetBrains (IntelliJ IDEA, Rider, PyCharm, …)
+        - Visual Studio
+        - VS Code
+    validations:
+      required: true
+  - type: input
+    id: ide-version
+    attributes:
+      label: IDE name and version
+      placeholder: "e.g. Rider 2025.2, Visual Studio 2026, VS Code 1.95"
+    validations:
+      required: true
+  - type: input
+    id: secretloader-version
+    attributes:
+      label: SecretLoader version
+      placeholder: "e.g. 1.0.0"
+    validations:
+      required: true
+  - type: input
+    id: vault-cli
+    attributes:
+      label: Vault and CLI
+      placeholder: "e.g. Infisical CLI 0.x, HashiCorp Vault, Doppler, AWS"
+    validations:
+      required: true
+  - type: textarea
+    id: command-template
+    attributes:
+      label: Command template
+      description: Your configured command template — redact any ids/secrets.
+      placeholder: "{cli} export --format=json --env={env} --projectId={project}"
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what actually happened.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / output
+      description: Relevant IDE logs or console output. REDACT secret values.
+      render: shell
