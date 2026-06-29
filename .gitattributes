@@ -1,0 +1,19 @@
+# Normalize line endings: store text as LF in the repo, check out native by default.
+* text=auto
+
+# Scripts run by a POSIX shell must stay LF, even on Windows checkouts —
+# a CRLF here breaks the `#!/usr/bin/env bash` shebang (bad interpreter).
+*.sh                 text eol=lf
+gradlew              text eol=lf
+git-hooks/pre-commit text eol=lf
+
+# Windows scripts want CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary assets — never line-ending normalize.
+*.jar  binary
+*.png  binary
+*.ico  binary
+*.vsix binary
+*.zip  binary

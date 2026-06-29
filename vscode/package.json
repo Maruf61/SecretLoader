@@ -1,0 +1,166 @@
+{
+  "name": "secretloader",
+  "publisher": "Maruf61",
+  "displayName": "SecretLoader",
+  "icon": "icon.png",
+  "description": "Pulls secrets from your vault and provides them to your app as environment variables when you run or debug, so they don't have to live in your config files. Works with Infisical, Doppler, HashiCorp Vault, AWS Secrets Manager, or any CLI that prints JSON.",
+  "version": "1.0.0",
+  "license": "GPL-3.0-or-later",
+  "author": {
+    "name": "Maruf61",
+    "email": "maruf.hakyemez@kivierp.com.tr"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Maruf61/SecretLoader.git",
+    "directory": "vscode"
+  },
+  "bugs": {
+    "url": "https://github.com/Maruf61/SecretLoader/issues"
+  },
+  "homepage": "https://github.com/Maruf61/SecretLoader#readme",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "secrets",
+    "vault",
+    "infisical",
+    "doppler",
+    "environment variables",
+    "debug"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "secretLoader.selectEnvironment",
+        "title": "SecretLoader: Select Environment"
+      },
+      {
+        "command": "secretLoader.pickProject",
+        "title": "SecretLoader: Pick Project"
+      },
+      {
+        "command": "secretLoader.applyPreset",
+        "title": "SecretLoader: Apply Vault Preset"
+      },
+      {
+        "command": "secretLoader.openSettings",
+        "title": "SecretLoader: Open Settings"
+      },
+      {
+        "command": "secretLoader.showMenu",
+        "title": "SecretLoader: Show Menu"
+      }
+    ],
+    "configuration": {
+      "title": "SecretLoader",
+      "properties": {
+        "secretLoader.cliPath": {
+          "type": "string",
+          "default": "infisical",
+          "markdownDescription": "The vault CLI executable (e.g. `infisical`, `vault`, `doppler`, `aws`). May be a full path.",
+          "scope": "window"
+        },
+        "secretLoader.commandTemplate": {
+          "type": "string",
+          "default": "{cli} export --format=json --env={env} --projectId={project}",
+          "markdownDescription": "Command that prints secrets as JSON. Placeholders: `{cli}` `{env}` `{project}`. `{project}` is dropped when no id is set so the CLI can self-resolve.",
+          "scope": "window"
+        },
+        "secretLoader.jsonPath": {
+          "type": "string",
+          "default": "$",
+          "markdownDescription": "Path to the secrets map in the CLI output. Default `$` (root). Example: `$.data.data`.",
+          "scope": "window"
+        },
+        "secretLoader.listProjectsCommand": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Optional. Command that prints a JSON list of projects for the **Pick Project** command. Placeholders: `{cli}` `{env}`.",
+          "scope": "window"
+        },
+        "secretLoader.listEnvironmentsCommand": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Command that prints a JSON list of environment slugs for the **Select Environment** picker (per-user, pulled live — never committed to git). Placeholders: `{cli}` `{project}`. The returned list is authoritative. Output: a JSON array of strings or `{slug|name|id}` objects.",
+          "scope": "window"
+        },
+        "secretLoader.defaultEnvironment": {
+          "type": "string",
+          "default": "dev",
+          "description": "Fallback environment when none is set on the debug config / repo config / workspace.",
+          "scope": "window"
+        },
+        "secretLoader.environment": {
+          "type": "string",
+          "default": "",
+          "description": "Per-workspace environment override (empty = repo config / global default).",
+          "scope": "resource"
+        },
+        "secretLoader.projectId": {
+          "type": "string",
+          "default": "",
+          "description": "Per-workspace project id override (empty = auto-detect from .infisical.json).",
+          "scope": "resource"
+        },
+        "secretLoader.strictMode": {
+          "type": "boolean",
+          "default": true,
+          "description": "Block the launch if secrets fail to load. (0 keys returned is still a valid success.)",
+          "scope": "resource"
+        },
+        "secretLoader.preferLocalVariables": {
+          "type": "boolean",
+          "default": true,
+          "description": "Don't overwrite environment variables already set on the debug configuration.",
+          "scope": "resource"
+        },
+        "secretLoader.timeoutSeconds": {
+          "type": "number",
+          "default": 10,
+          "description": "Force-kill the CLI if it hangs longer than this.",
+          "scope": "window"
+        },
+        "secretLoader.blacklist": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "markdownDescription": "Key names / globs (`*`, `?`) that are never injected.",
+          "scope": "window"
+        },
+        "secretLoader.enableCache": {
+          "type": "boolean",
+          "default": true,
+          "description": "Cache fetched secrets in memory between launches.",
+          "scope": "window"
+        },
+        "secretLoader.cacheDurationMinutes": {
+          "type": "number",
+          "default": 5,
+          "description": "How long cached secrets stay valid.",
+          "scope": "window"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.0.0"
+  }
+}

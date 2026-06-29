@@ -1,0 +1,78 @@
+<idea-plugin require-restart="true">
+  <id>com.kivi.secretloader</id>
+  <name>SecretLoader</name>
+  <version>1.0.0</version>
+  <vendor email="maruf.hakyemez@kivierp.com.tr" url="https://github.com/Maruf61/SecretLoader">Kivi A.Ş.</vendor>
+  <depends>com.intellij.modules.platform</depends>
+  <depends>com.intellij.modules.vcs</depends>
+
+  <description>
+<![CDATA[
+<p>SecretLoader pulls application secrets from a secrets manager and supplies them to your run and debug
+sessions as environment variables, so credentials don't have to live in <code>appsettings.json</code>,
+<code>.env</code> files, or run-configuration dialogs. Your code reads them like any other environment
+variable, and nothing about how you run the project changes.</p>
+
+<p>It works with any command-line tool that can print secrets as JSON. Infisical is configured by default,
+and presets are included for HashiCorp Vault, Doppler, and AWS Secrets Manager. A command template adapts
+it to an in-house tool:</p>
+<ul>
+  <li><code>{cli} export --format=json --env={env} --projectId={project}</code></li>
+</ul>
+<p>It has been tested with Infisical; the other vaults run through the same generic engine.</p>
+
+<h3>Switching environments</h3>
+<p>Move between <code>dev</code>, <code>staging</code>, and <code>prod</code> without touching code. The
+active environment is resolved by precedence, highest first:</p>
+<ul>
+  <li>a <code>SECRETLOADER_ENV</code> variable set on the run configuration</li>
+  <li>a per-project setting</li>
+  <li>a git-branch to environment mapping in <code>.infisical.json</code></li>
+  <li>the repository default, then the global default</li>
+</ul>
+
+<h3>Details</h3>
+<ul>
+  <li>If secrets can't be loaded, the launch is stopped rather than started against blank configuration.
+      An environment that legitimately has no secrets still launches.</li>
+  <li>A per-project, in-memory cache keyed by project, path, and environment, with a configurable TTL.</li>
+  <li>A key blacklist to exclude specific keys from injection.</li>
+  <li>Secret values are kept out of console output.</li>
+  <li>The CLI is run directly rather than through a shell, and the environment and project id interpolated
+      into the command are validated first.</li>
+  <li>An optional pre-commit check that blocks commits containing known secret values.</li>
+</ul>
+
+<h3>In the editor</h3>
+<ul>
+  <li>No changes to application code or run configurations.</li>
+  <li>A status-bar widget showing the active project and environment.</li>
+  <li>One-click detection of the project id from <code>.infisical.json</code>.</li>
+  <li>A dry-run panel that previews which keys will be injected.</li>
+</ul>
+
+<p>Works across IntelliJ-based IDEs, including IntelliJ IDEA, JetBrains Rider (.NET), PyCharm, WebStorm,
+and GoLand.</p>
+]]>
+  </description>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <applicationService serviceImplementation="com.kivi.secretloader.settings.SecretLoaderSettings"/>
+    <applicationConfigurable parentId="tools" instance="com.kivi.secretloader.settings.SecretLoaderConfigurable" id="SecretLoaderSettings" displayName="SecretLoader"/>
+    <statusBarWidgetFactory implementation="com.kivi.secretloader.settings.SecretLoaderStatusBarWidgetFactory" id="SecretLoaderWidget"/>
+    <toolWindow id="SecretLoader" anchor="bottom" factoryClass="com.kivi.secretloader.execution.SecretLoaderToolWindowFactory" icon="AllIcons.General.LockedUltimate"/>
+    <consoleInputFilterProvider implementation="com.kivi.secretloader.execution.SecretLoaderConsoleFilterProvider"/>
+    <checkinHandlerFactory implementation="com.kivi.secretloader.vcs.SecretLoaderCheckinHandlerFactory"/>
+    <notificationGroup id="SecretLoader" displayType="BALLOON" />
+  </extensions>
+
+  <applicationListeners>
+    <listener class="com.kivi.secretloader.execution.SecretLoaderExecutionListener" topic="com.intellij.execution.ExecutionListener"/>
+  </applicationListeners>
+
+  <actions>
+    <action id="SecretLoader.ClearCache" class="com.kivi.secretloader.settings.ClearSecretLoaderCacheAction" text="Clear SecretLoader Cache" description="Flushes the in-memory secrets cache.">
+      <add-to-group group-id="ToolsMenu" anchor="last"/>
+    </action>
+  </actions>
+</idea-plugin>

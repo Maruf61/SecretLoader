@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
+  <Metadata>
+    <Identity Id="SecretLoader.f7b5fba9-a49c-47fe-8857-7e0658790cf2" Version="1.0.0" Language="en-US" Publisher="Maruf61" />
+    <DisplayName>SecretLoader</DisplayName>
+    <Description xml:space="preserve">Pulls secrets from your vault and provides them to your app as environment variables when you run or debug, so they don't have to live in your config files. Works with Infisical, Doppler, HashiCorp Vault, AWS Secrets Manager, or any CLI that prints JSON.</Description>
+    <MoreInfo>https://github.com/Maruf61/SecretLoader</MoreInfo>
+    <License>LICENSE.txt</License>
+    <Icon>icon.png</Icon>
+    <Tags>secrets;vault;infisical;doppler;environment variables;debug;launch</Tags>
+  </Metadata>
+  <Installation>
+    <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[18.0, )">
+      <ProductArchitecture>amd64</ProductArchitecture>
+    </InstallationTarget>
+  </Installation>
+  <Dependencies>
+    <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" Version="[4.5,)" d:Source="Manual" />
+  </Dependencies>
+  <Prerequisites>
+    <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" DisplayName="Visual Studio core editor" Version="[18.0, )" />
+  </Prerequisites>
+  <Assets>
+    <Asset Type="Microsoft.VisualStudio.VsPackage" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" d:Source="Project" d:ProjectName="%CurrentProject%" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" Path="|%CurrentProject%|" d:Source="Project" d:ProjectName="%CurrentProject%" />
+  </Assets>
+</PackageManifest>

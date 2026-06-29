@@ -1,0 +1,8 @@
+{
+  "projectId": "your-infisical-project-id",
+  "defaultEnvironment": "dev",
+  "gitBranchToEnvironmentMapping": {
+    "main": "prod",
+    "develop": "staging"
+  }
+}

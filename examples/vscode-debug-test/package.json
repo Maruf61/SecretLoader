@@ -1,0 +1,10 @@
+{
+  "name": "secretloader-vscode-debug-test",
+  "version": "1.0.0",
+  "description": "Test workspace for verifying SecretLoader injection in VS Code.",
+  "private": true,
+  "scripts": {
+    "start": "node app.js",
+    "baseline": "node app.js --baseline"
+  }
+}

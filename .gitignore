@@ -1,0 +1,29 @@
+# Aggregated build output (produced by build.ps1 / build.sh) — never committed
+build/
+
+# Node / VS Code
+node_modules/
+out/
+*.vsix
+.env-baseline.json
+
+# .NET / Visual Studio
+bin/
+obj/
+.vs/
+*.user
+*.suo
+
+# Gradle / IntelliJ
+.gradle/
+.kotlin/
+.intellijPlatform/
+.idea/
+*.iml
+
+# Java (single-file example)
+*.class
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db

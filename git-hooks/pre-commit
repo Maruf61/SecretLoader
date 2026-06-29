@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+#
+# SecretLoader
+# Copyright (C) 2026 Kivi A.Ş.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+# SecretLoader pre-commit hook — blocks commits that contain likely secrets.
+#
+# The whole point of SecretLoader is that secrets live in your vault and are injected at run time,
+# never written to disk or committed. This hook is the safety net: it scans the STAGED diff for
+# common secret shapes and refuses the commit if it finds any.
+#
+# Bypass a single false positive by adding a trailing comment on the line:   # secretloader:allow
+# Bypass the whole hook once (not recommended):                              git commit --no-verify
+#
+# Install: run ./git-hooks/install.sh from the repo root (see README.md).
+
+set -euo pipefail
+
+RED=$'\033[31m'; YEL=$'\033[33m'; BOLD=$'\033[1m'; RST=$'\033[0m'
+[ -t 1 ] || { RED=""; YEL=""; BOLD=""; RST=""; }
+
+# Only scan added/changed lines in text files that are staged.
+staged_files() {
+  git diff --cached --name-only --diff-filter=ACM
+}
+
+# Patterns: name => extended-regex. Keep these conservative to limit false positives.
+declare -a NAMES=(
+  "AWS access key id"
+  "AWS secret access key"
+  "Private key block"
+  "Slack token"
+  "GitHub token"
+  "Google API key"
+  "Generic assigned secret"
+  "Connection string with password"
+)
+declare -a REGEX=(
+  'AKIA[0-9A-Z]{16}'
+  '(aws_secret_access_key|aws_secret)[[:space:]]*[:=][[:space:]]*["'"'"']?[A-Za-z0-9/+=]{40}'
+  '-----BEGIN[[:space:]].*PRIVATE KEY-----'
+  'xox[baprs]-[0-9A-Za-z-]{10,}'
+  '(ghp|gho|ghu|ghs|ghr)_[0-9A-Za-z]{36}'
+  'AIza[0-9A-Za-z_-]{35}'
+  '(api[_-]?key|secret|password|passwd|pwd|token|access[_-]?key)[[:space:]]*[:=][[:space:]]*["'"'"']?[A-Za-z0-9/+_=.-]{8,}'
+  '(password|pwd)=[^;"'"'"' ]{6,}'
+)
+
+violations=0
+
+scan_file() {
+  local file="$1"
+  # Skip binary files.
+  if git diff --cached --numstat -- "$file" | grep -q '^-' ; then return 0; fi
+
+  # Walk the staged ADDED lines (those starting with '+', excluding the +++ header).
+  local lineno=0
+  while IFS= read -r line; do
+    # Track new-file line numbers from hunk headers.
+    if [[ "$line" =~ ^@@\ -[0-9,]+\ \+([0-9]+) ]]; then
+      lineno="${BASH_REMATCH[1]}"; continue
+    fi
+    case "$line" in
+      +++*) continue ;;
+      +*) ;;                       # an added line — scan it
+      \ *) ((lineno++)) || true; continue ;;
+      *) continue ;;
+    esac
+
+    local content="${line:1}"
+    # Honor an explicit allow marker.
+    if printf '%s' "$content" | grep -qiE 'secretloader:allow'; then ((lineno++)) || true; continue; fi
+
+    local i
+    for i in "${!REGEX[@]}"; do
+      if printf '%s' "$content" | grep -qiE -- "${REGEX[$i]}"; then
+        printf '%s%s%s  %s:%s%s\n' "$RED" "✖ ${NAMES[$i]}" "$RST" "$file" "$lineno" ""
+        printf '    %s%s%s\n' "$YEL" "$(printf '%s' "$content" | sed -E 's/^[[:space:]]+//' | cut -c1-100)" "$RST"
+        violations=$((violations+1))
+      fi
+    done
+    ((lineno++)) || true
+  done < <(git diff --cached -U0 -- "$file")
+}
+
+while IFS= read -r f; do
+  [ -n "$f" ] || continue
+  scan_file "$f"
+done < <(staged_files)
+
+if [ "$violations" -gt 0 ]; then
+  echo
+  echo "${BOLD}${RED}SecretLoader: blocked ${violations} possible secret(s) in your staged changes.${RST}"
+  echo "Move secrets into your vault (they get injected at run time), or mark a confirmed false"
+  echo "positive with a trailing  ${BOLD}# secretloader:allow${RST}  comment. Override once with --no-verify."
+  exit 1
+fi
+
+exit 0

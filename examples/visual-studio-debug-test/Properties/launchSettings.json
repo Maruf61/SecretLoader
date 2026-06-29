@@ -1,0 +1,19 @@
+{
+  "profiles": {
+    "dev (SECRETLOADER_ENV=dev)": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "SECRETLOADER_ENV": "dev"
+      }
+    },
+    "prod (SECRETLOADER_ENV=prod)": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "SECRETLOADER_ENV": "prod"
+      }
+    },
+    "default (no SECRETLOADER_ENV)": {
+      "commandName": "Project"
+    }
+  }
+}
