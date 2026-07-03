@@ -80,6 +80,24 @@ class SecretFetcherTest {
         }
     }
 
+    /**
+     * A CLI whose output exceeds the OS pipe buffer (a few KB on Windows) must not deadlock:
+     * if stdout is only read after waitFor(), the child blocks writing and "times out".
+     */
+    @Test
+    fun largeOutputDoesNotDeadlockIntoTimeout() {
+        val payload = "x".repeat(1 shl 20) // 1 MiB, far beyond any pipe buffer
+        val file = java.io.File.createTempFile("secretloader-large", ".txt").apply {
+            deleteOnExit()
+            writeText(payload)
+        }
+        val windows = System.getProperty("os.name").lowercase().contains("win")
+        val command = if (windows) listOf("cmd", "/c", "type", file.absolutePath)
+                      else listOf("cat", file.absolutePath)
+        val out = SecretFetcher.execute(command, file.parentFile, 10)
+        assertEquals(payload.length, out.length)
+    }
+
     @Test
     fun blacklistGlobMatches() {
         val patterns = SecretLoaderSettings.blacklistPatterns("AWS_*\nDEBUG")

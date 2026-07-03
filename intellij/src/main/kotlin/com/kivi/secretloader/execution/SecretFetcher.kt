@@ -84,22 +84,66 @@ object SecretFetcher {
     ): Map<String, String> {
         val command = buildCommand(settings, env, projectId)
         if (command.isEmpty()) throw FetchException("Command is empty after template substitution.")
+        val output = execute(command, File(basePath), settings.timeoutSeconds.toLong())
+        return parse(output, settings.jsonPath)
+    }
 
+    /** Runs [command] and returns its stdout. Throws [FetchException] on timeout or non-zero exit. */
+    fun execute(command: List<String>, workingDir: File, timeoutSeconds: Long): String {
         val process = ProcessBuilder(command)
-            .directory(File(basePath))
+            .directory(workingDir)
             .start()
 
-        val finished = process.waitFor(settings.timeoutSeconds.toLong(), TimeUnit.SECONDS)
+        // No stdin: a CLI that tries to prompt (e.g. it can't see the terminal's login/token env
+        // from inside the IDE) gets EOF and fails with its own error instead of hanging silently.
+        process.outputStream.close()
+
+        // Drain both streams while the process runs. The OS pipe buffer is only a few KB (Windows
+        // especially): reading stdout only after waitFor() deadlocks any CLI whose output is
+        // larger — it blocks on write, never exits, and gets reported as a timeout.
+        val stdout = StreamDrain(process.inputStream)
+        val stderr = StreamDrain(process.errorStream)
+
+        val finished = process.waitFor(timeoutSeconds, TimeUnit.SECONDS)
         if (!finished) {
             process.destroyForcibly()
-            throw FetchException("CLI timed out after ${settings.timeoutSeconds}s.")
+            val err = stderr.snapshot().trim().takeLast(300)
+            throw FetchException(
+                "CLI timed out after ${timeoutSeconds}s." + if (err.isNotEmpty()) "\nStderr so far: $err"
+                else " No output — the CLI may be waiting for input (login?) or unreachable network."
+            )
         }
         if (process.exitValue() != 0) {
-            val err = process.errorStream.bufferedReader().readText().trim().take(500)
+            val err = stderr.awaitText().trim().take(500)
             throw FetchException("CLI exited ${process.exitValue()}: $err")
         }
-        val output = process.inputStream.bufferedReader().readText()
-        return parse(output, settings.jsonPath)
+        return stdout.awaitText()
+    }
+
+    /** Reads a process stream on a daemon thread so the child never blocks on a full pipe. */
+    private class StreamDrain(stream: java.io.InputStream) {
+        private val sb = StringBuilder()
+        private val thread = Thread {
+            try {
+                stream.bufferedReader().use { r ->
+                    val buf = CharArray(8192)
+                    while (true) {
+                        val n = r.read(buf)
+                        if (n < 0) break
+                        synchronized(sb) { sb.append(buf, 0, n) }
+                    }
+                }
+            } catch (_: Exception) {}
+        }.apply { isDaemon = true; name = "SecretLoader stream drain"; start() }
+
+        /** Full text after the stream closed (process exited). */
+        fun awaitText(): String {
+            thread.join(10_000)
+            return snapshot()
+        }
+
+        /** Whatever has been read so far (for timeout diagnostics). */
+        fun snapshot(): String = synchronized(sb) { sb.toString() }
     }
 
     fun buildCommand(settings: SecretLoaderSettings.State, env: String, projectId: String): List<String> =

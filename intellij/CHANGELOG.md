@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.2
+
+- Fix false "CLI timed out" failures when the vault CLI prints more output than the OS pipe
+  buffer (a few KB, so any medium-sized secret set): stdout/stderr are now drained while the
+  CLI runs instead of after it exits, which deadlocked the child process on Windows.
+- The CLI's stdin is now closed, so a CLI that tries to prompt (e.g. not logged in within the
+  IDE's environment) fails with its own error message instead of hanging until the timeout.
+- Timeout errors now include the CLI's stderr captured so far, to make diagnosis possible.
+- Fix a "Read access is allowed from inside read-action only" error logged when the env-map
+  traversal ran on a background thread (e.g. the dry-run panel on Rider, where
+  `getLaunchSettings` requires read access). The traversal now runs inside a read action.
+
 ## 1.0.1
 
 - Internal: iterate JSON objects with the non-deprecated Jackson `JsonNode` API (`fieldNames()`/`get()` instead of `fields()`) to clear a plugin-verifier deprecation warning. No functional change.

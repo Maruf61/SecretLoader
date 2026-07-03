@@ -18,6 +18,8 @@
 
 package com.kivi.secretloader.execution
 
+import com.intellij.openapi.application.ReadAction
+
 /**
  * Reflective environment-variable injection into a RunProfile's env map.
  *
@@ -27,6 +29,10 @@ package com.kivi.secretloader.execution
  *
  * [inject] returns an [Injection] whose [Injection.undo] reverts the mutation, so the (potentially
  * persistent) run configuration never retains secret values after the run ends — nothing on disk.
+ *
+ * Threading: the [DRILL] getters can read the IDE model (e.g. Rider's
+ * `LaunchSettingsConfigurationParameters.getLaunchSettings` asserts read access), so both entry
+ * points wrap the whole traversal in a read action — callers may be on any thread.
  */
 object EnvInjector {
     private val TARGET_FIELDS = listOf("environmentVariables", "envs", "env", "envVars", "myEnvironmentVariables")
@@ -36,7 +42,10 @@ object EnvInjector {
     data class Injection(val ownerClass: String, val injectedKeys: Set<String>, val undo: () -> Unit)
 
     /** Read-only: find the first env-vars map on the profile (for prefer-local + dry-run shadowing). */
-    fun findEnvMap(obj: Any?, visited: MutableSet<Any> = mutableSetOf()): Map<String, String>? {
+    fun findEnvMap(obj: Any?): Map<String, String>? =
+        ReadAction.compute<Map<String, String>?, RuntimeException> { findEnvMapRec(obj, mutableSetOf()) }
+
+    private fun findEnvMapRec(obj: Any?, visited: MutableSet<Any>): Map<String, String>? {
         if (obj == null || !visited.add(obj)) return null
         try {
             val mapFields = obj.javaClass.declaredFields.filter { Map::class.java.isAssignableFrom(it.type) }
@@ -60,14 +69,14 @@ object EnvInjector {
             try {
                 val method = obj.javaClass.methods.find { it.name == d && it.parameterCount == 0 } ?: continue
                 val inner = method.invoke(obj) ?: continue
-                findEnvMap(inner, visited)?.let { return it }
+                findEnvMapRec(inner, visited)?.let { return it }
             } catch (_: Exception) {}
         }
         return null
     }
 
     fun inject(profile: Any?, secrets: Map<String, String>): Injection? =
-        injectRec(profile, secrets, mutableSetOf())
+        ReadAction.compute<Injection?, RuntimeException> { injectRec(profile, secrets, mutableSetOf()) }
 
     private fun injectRec(obj: Any?, secrets: Map<String, String>, visited: MutableSet<Any>): Injection? {
         if (obj == null || !visited.add(obj)) return null

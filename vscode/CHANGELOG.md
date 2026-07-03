@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.2
+
+- Version sync with the IntelliJ edition's threading fix. No VS Code changes.
+
 ## 1.0.1
 
 - Maintenance release: marketplace packaging metadata only. No functional changes.
