@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.3
+
+- Fix the dry-run panel's "Shadows local?" column showing blank for run configs (notably
+  Rider/.NET) that carry an empty env field on the configuration while the real variables live
+  deeper in a launch-settings profile. `findEnvMap` now unions every env map reachable on the
+  profile (searching the full class hierarchy) instead of stopping at the first — which was often
+  the empty shallow one — with the shallower/primary value winning on key conflicts.
+- Replace the deprecated `ReadAction.compute` (flagged by the 2026.2 plugin verifier) with
+  `Application.runReadAction`, which is not deprecated and exists on all supported IDEs.
+  Its suggested successor `computeBlocking` was not an option — it doesn't exist before 2025.2
+  and would break the plugin's 2022.3+ compatibility range. No behavior change.
+
 ## 1.0.2
 
 - Fix false "CLI timed out" failures when the vault CLI prints more output than the OS pipe

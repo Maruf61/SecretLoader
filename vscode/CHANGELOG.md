@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.3
+
+- Version sync with the IntelliJ edition's deprecated-API cleanup. No VS Code changes.
+
 ## 1.0.2
 
 - Version sync with the IntelliJ edition's threading fix. No VS Code changes.

@@ -18,7 +18,8 @@
 
 package com.kivi.secretloader.execution
 
-import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.util.Computable
 
 /**
  * Reflective environment-variable injection into a RunProfile's env map.
@@ -41,42 +42,64 @@ object EnvInjector {
 
     data class Injection(val ownerClass: String, val injectedKeys: Set<String>, val undo: () -> Unit)
 
-    /** Read-only: find the first env-vars map on the profile (for prefer-local + dry-run shadowing). */
+    /**
+     * Read-only: the union of every env-vars map reachable on the profile (for prefer-local +
+     * dry-run shadowing + SECRETLOADER_ENV/DISABLE detection). We union across the whole graph
+     * rather than returning the first map found, because a run config can carry an *empty* env
+     * field on itself while the real user variables live deeper (e.g. a Rider launch-settings
+     * profile reached via [DRILL]); returning the empty shallow map would hide them. When a key
+     * appears at more than one depth, the shallower (primary) value wins.
+     */
     fun findEnvMap(obj: Any?): Map<String, String>? =
-        ReadAction.compute<Map<String, String>?, RuntimeException> { findEnvMapRec(obj, mutableSetOf()) }
+        ApplicationManager.getApplication().runReadAction(Computable { collectEnvMap(obj) })
 
-    private fun findEnvMapRec(obj: Any?, visited: MutableSet<Any>): Map<String, String>? {
-        if (obj == null || !visited.add(obj)) return null
+    /** Read-action-free core of [findEnvMap]. Internal for unit testing without an IDE Application. */
+    internal fun collectEnvMap(obj: Any?): Map<String, String>? {
+        val acc = LinkedHashMap<String, String>()
+        collectEnvMapRec(obj, mutableSetOf(), acc)
+        return acc.ifEmpty { null }
+    }
+
+    private fun collectEnvMapRec(obj: Any?, visited: MutableSet<Any>, acc: MutableMap<String, String>) {
+        if (obj == null || !visited.add(obj)) return
         try {
-            val mapFields = obj.javaClass.declaredFields.filter { Map::class.java.isAssignableFrom(it.type) }
-            for (field in mapFields.sortedByDescending { TARGET_FIELDS.contains(it.name) }) {
-                if (!TARGET_FIELDS.contains(field.name)) continue
+            for (field in envFields(obj.javaClass)) {
                 field.isAccessible = true
                 @Suppress("UNCHECKED_CAST")
-                val m = field.get(obj) as? Map<String, String>
-                if (m != null) return m
+                (field.get(obj) as? Map<String, String>)?.forEach { (k, v) -> acc.putIfAbsent(k, v) }
             }
         } catch (_: Exception) {}
         for (g in GETTERS) {
             try {
                 val getter = obj.javaClass.methods.find { it.name == g && it.parameterCount == 0 } ?: continue
                 @Suppress("UNCHECKED_CAST")
-                val m = getter.invoke(obj) as? Map<String, String>
-                if (m != null) return m
+                (getter.invoke(obj) as? Map<String, String>)?.forEach { (k, v) -> acc.putIfAbsent(k, v) }
             } catch (_: Exception) {}
         }
         for (d in DRILL) {
             try {
                 val method = obj.javaClass.methods.find { it.name == d && it.parameterCount == 0 } ?: continue
                 val inner = method.invoke(obj) ?: continue
-                findEnvMapRec(inner, visited)?.let { return it }
+                collectEnvMapRec(inner, visited, acc)
             } catch (_: Exception) {}
         }
-        return null
+    }
+
+    /** TARGET_FIELDS-named Map fields declared anywhere in [cls]'s hierarchy (not just the leaf class). */
+    private fun envFields(cls: Class<*>): List<java.lang.reflect.Field> {
+        val out = ArrayList<java.lang.reflect.Field>()
+        var c: Class<*>? = cls
+        while (c != null && c != Any::class.java) {
+            c.declaredFields.filterTo(out) {
+                Map::class.java.isAssignableFrom(it.type) && TARGET_FIELDS.contains(it.name)
+            }
+            c = c.superclass
+        }
+        return out
     }
 
     fun inject(profile: Any?, secrets: Map<String, String>): Injection? =
-        ReadAction.compute<Injection?, RuntimeException> { injectRec(profile, secrets, mutableSetOf()) }
+        ApplicationManager.getApplication().runReadAction(Computable { injectRec(profile, secrets, mutableSetOf()) })
 
     private fun injectRec(obj: Any?, secrets: Map<String, String>, visited: MutableSet<Any>): Injection? {
         if (obj == null || !visited.add(obj)) return null
